@@ -1,0 +1,34 @@
+#!/usr/bin/make -f
+# debian/rules for the Debian libxi package.
+# Copyright © 2004 Scott James Remnant <scott@netsplit.com>
+# Copyright © 2005 Daniel Stone <daniel@fooishbar.org>
+# Copyright © 2005 David Nusinow <dnusinow@debian.org>
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+# set this to the name of the main shlib's binary package
+PACKAGE = libxi6
+
+.PHONY: build
+build:
+	dh build --with quilt,autoreconf --builddirectory=build/ --parallel
+
+%:
+	dh $@ --with quilt,autoreconf --builddirectory=build/ --parallel
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		--disable-silent-rules \
+		--with-xmlto \
+		--without-fop
+
+override_dh_install:
+	dh_install --fail-missing --exclude=libXi.la --exclude .db --exclude .xml
+
+override_dh_strip:
+	dh_strip -p$(PACKAGE) --dbg-package=$(PACKAGE)-dbg
+	dh_strip -N$(PACKAGE)
+
+override_dh_makeshlibs:
+	dh_makeshlibs -V'libxi6 (>= 2:1.6.99.1)' --add-udeb=$(PACKAGE)-udeb -- -c4
